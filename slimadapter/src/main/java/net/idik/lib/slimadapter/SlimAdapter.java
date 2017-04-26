@@ -7,6 +7,7 @@ import net.idik.lib.slimadapter.viewinjector.IViewInjector;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,10 @@ public class SlimAdapter extends AbstractSlimAdapter {
     }
 
     private List<?> data;
+
+    public SlimAdapter setData(Object[] data) {
+        return setData(Arrays.asList(data));
+    }
 
     public SlimAdapter setData(List<?> data) {
         this.data = data;
