@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.recyler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         SlimAdapter.create()
-                .register(R.layout.item_user, new SlimInjector<User>() {
+                .register(R.layout.item_user, User.class, new SlimInjector<User>() {
                     @Override
                     public void onInject(User data, IViewInjector injector) {
                         injector.text(R.id.name, data.getName())
@@ -49,14 +49,14 @@ public class MainActivity extends AppCompatActivity {
                                 .textSize(R.id.age, 8);
                     }
                 })
-                .register(R.layout.item_interger, new SlimInjector<Integer>() {
+                .register(R.layout.item_interger, Integer.class, new SlimInjector<Integer>() {
                     @Override
                     public void onInject(Integer data, IViewInjector injector) {
                         injector.text(R.id.text, data.toString());
 
                     }
                 })
-                .register(R.layout.item_string, new SlimInjector<String>() {
+                .register(R.layout.item_string, String.class, new SlimInjector<String>() {
                     @Override
                     public void onInject(String data, IViewInjector injector) {
                         injector.text(R.id.text, data);
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .registerDefault(R.layout.item_string, new SlimInjector() {
                     @Override
-                    public void onInject(Object data, IViewInjector injector) {
+                    public void onInject(Object data, final IViewInjector injector) {
                         injector.text(R.id.text, data.toString())
                                 .longClicked(R.id.text, new View.OnLongClickListener() {
                                     @Override
@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(View v) {
                                         Toast.makeText(MainActivity.this, "DEFAULT INJECT", Toast.LENGTH_LONG).show();
+                                        injector.notifyDataSetChanged();
                                     }
                                 });
 
