@@ -18,6 +18,8 @@ public interface IViewInjector<VI extends IViewInjector> {
 
     <T extends View> T findViewById(int id);
 
+    <T extends View> T getItemView();
+
     VI tag(int id, Object object);
 
     VI text(int id, int res);

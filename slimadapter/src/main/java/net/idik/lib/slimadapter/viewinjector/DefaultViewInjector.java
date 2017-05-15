@@ -38,6 +38,12 @@ public class DefaultViewInjector implements IViewInjector<DefaultViewInjector> {
     }
 
     @Override
+    public <T extends View> T getItemView() {
+        //noinspection unchecked
+        return (T) viewHolder.itemView;
+    }
+
+    @Override
     public DefaultViewInjector tag(int id, Object object) {
         findViewById(id).setTag(object);
         return this;
