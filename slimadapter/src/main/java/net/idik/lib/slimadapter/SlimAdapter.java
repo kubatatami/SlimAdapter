@@ -28,6 +28,7 @@ public class SlimAdapter extends AbstractSlimAdapter {
 
     private static final int WHAT_NOTIFY_DATA_SET_CHANGED = 1;
     private final static int TYPE_LOAD_MORE = -10;
+    private static final int FIRST_FILTER_ITEM_TYPE_INDEX = TYPE_LOAD_MORE - 1;
 
     private SlimMoreLoader moreLoader;
 
@@ -109,6 +110,12 @@ public class SlimAdapter extends AbstractSlimAdapter {
 
     private Map<Type, IViewHolderCreator> creators = new HashMap<>();
 
+    private List<IViewHolderCreator> customCreators = new ArrayList<>();
+
+    private List<InjectorFilter> customFilters = new ArrayList<>();
+
+    private List<Type> customTypes = new ArrayList<>();
+
     private IViewHolderCreator defaultCreator = null;
 
     private SlimDiffUtil.Callback diffCallback = null;
@@ -127,6 +134,8 @@ public class SlimAdapter extends AbstractSlimAdapter {
     public SlimViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == TYPE_LOAD_MORE) {
             return new SlimExLoadMoreViewHolder(moreLoader.getLoadMoreView());
+        } else if (viewType <= FIRST_FILTER_ITEM_TYPE_INDEX) {
+            return customCreators.get(FIRST_FILTER_ITEM_TYPE_INDEX - viewType).create(parent);
         }
         Type dataType = dataTypes.get(viewType);
         IViewHolderCreator creator = creators.get(dataType);
@@ -209,6 +218,29 @@ public class SlimAdapter extends AbstractSlimAdapter {
         return this;
     }
 
+    public <T> SlimAdapter register(final int layoutRes, final InjectorFilter<T> filter, final SlimInjector<T> slimInjector) {
+        Type type = getSlimInjectorActualTypeArguments(slimInjector);
+        if (type == null) {
+            throw new IllegalArgumentException();
+        }
+        customTypes.add(type);
+        customFilters.add(filter);
+        customCreators.add(new IViewHolderCreator<T>() {
+            @Override
+            public SlimTypeViewHolder<T> create(ViewGroup parent) {
+                return new SlimTypeViewHolder<T>(parent, layoutRes) {
+                    @Override
+                    protected void onBind(T data, IViewInjector injector) {
+                        slimInjector.onInject(data, injector);
+                    }
+                };
+            }
+        });
+        return this;
+    }
+
+    //customCreators
+
     private <T> Type getSlimInjectorActualTypeArguments(SlimInjector<T> slimInjector) {
         Type[] interfaces = slimInjector.getClass().getGenericInterfaces();
         for (Type type : interfaces) {
@@ -239,6 +271,14 @@ public class SlimAdapter extends AbstractSlimAdapter {
             return TYPE_LOAD_MORE;
         }
         Object item = data.get(position);
+        int i = 0;
+        for (InjectorFilter filter : customFilters) {
+            //noinspection unchecked
+            if (customTypes.get(i).equals(item.getClass()) && filter.filter(item)) {
+                return FIRST_FILTER_ITEM_TYPE_INDEX - i;
+            }
+            i++;
+        }
         int index = dataTypes.indexOf(item.getClass());
         if (index == -1) {
             dataTypes.add(item.getClass());
@@ -280,6 +320,10 @@ public class SlimAdapter extends AbstractSlimAdapter {
             super(parent, itemLayoutRes);
         }
 
+    }
+
+    public interface InjectorFilter<T> {
+        boolean filter(T item);
     }
 
 }

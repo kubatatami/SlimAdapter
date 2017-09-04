@@ -1,14 +1,12 @@
 package net.idik.lib.slimadapter.exampleforkotlin
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.annotation.IntegerRes
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.widget.Toast
 import net.idik.lib.slimadapter.SlimAdapter
-
-import java.util.ArrayList
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private val recyclerView: RecyclerView by lazy<RecyclerView> {
@@ -22,9 +20,17 @@ class MainActivity : AppCompatActivity() {
                 .register<String>(R.layout.item_string) { data, injector ->
                     injector.text(R.id.text, data)
                 }
+                .register<String>(R.layout.item_string_empty, { str -> str.isEmpty() }) { data, injector -> }
                 .register<User>(R.layout.item_user) { data, injector ->
                     injector.text(R.id.name, data.name)
                             .text(R.id.age, data.age.toString())
+                            .clicked(R.id.name) {
+                                Toast.makeText(this@MainActivity, "click user name", Toast.LENGTH_LONG).show()
+                            }
+                }
+                .register<User>(R.layout.item_user, { item -> item.age < 18 }) { data, injector ->
+                    injector.text(R.id.name, data.name)
+                            .text(R.id.age, "Child")
                             .clicked(R.id.name) {
                                 Toast.makeText(this@MainActivity, "click user name", Toast.LENGTH_LONG).show()
                             }
@@ -60,7 +66,9 @@ class MainActivity : AppCompatActivity() {
             data.add(666666)
             data.add("hello")
             data.add(",")
+            data.add("")
             data.add(User("iDIK", 27))
+            data.add(User("iDIK", 10))
             data.add("world")
             data.add("with")
             data.add("kotlin")
